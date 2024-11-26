@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Inventari } from './inventari.entity';
 import { UtilsService } from '../utils/utils.service';
 import { CreateInventariDto, UpdateInventariDto } from './inventari.dto';
+import { Issue } from '../issues/issues.entity';
 
 @Injectable()
 export class InventariService {
@@ -11,6 +12,7 @@ export class InventariService {
     private readonly utilsService: UtilsService,
     @InjectRepository(Inventari)
     private readonly inventariRepository: Repository<Inventari>,
+    @InjectRepository(Issue) private issueRepository: Repository<Issue>,
   ) {}
 
   async getInventari(id?: number, xml?: string): Promise<any> {
@@ -79,5 +81,59 @@ export class InventariService {
       throw new HttpException('Inventario no encontrado', HttpStatus.NOT_FOUND);
     }
     return { message: 'Inventario eliminado' };
+  }
+
+  async countIssuesByInventari(inventariId: number): Promise<number> {
+    const inventari = await this.inventariRepository.findOne({
+      where: { id_inventory: inventariId },
+      relations: ['fk_issue'],
+    });
+
+    if (!inventari) {
+      throw new HttpException('Dispositiu no trobat', HttpStatus.NOT_FOUND);
+    }
+    return inventari.fk_issue.length;
+  }
+
+  async userStatsByInventari(inventariId: number): Promise<any> {
+    const issues = await this.issueRepository.find({
+      where: { fk_inventari: { id_inventory: inventariId } },
+      relations: ['user'],
+    });
+
+    if (!issues || issues.length === 0) {
+      throw new HttpException(
+        'No hi ha incidències associades a aquest dispositiu',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const userStats = issues.reduce((stats, issue) => {
+      const userId = issue.user?.id_user;
+      if (userId) {
+        stats[userId] = (stats[userId] || 0) + 1;
+      }
+      return stats;
+    }, {});
+
+    return userStats;
+  }
+  async getAllDevicesWithIssues(): Promise<any[]> {
+    const devices = await this.inventariRepository.find({
+      relations: ['fk_issue'],
+    });
+
+    if (!devices || devices.length === 0) {
+      throw new HttpException('No hi ha dispositius', HttpStatus.NOT_FOUND);
+    }
+
+    const result = devices.map((device) => ({
+      id_inventory: device.id_inventory,
+      num_serie: device.num_serie,
+      brand: device.brand,
+      model: device.model,
+      issue_count: device.fk_issue?.length || 0,
+    }));
+
+    return result;
   }
 }

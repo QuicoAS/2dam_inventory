@@ -48,4 +48,18 @@ export class InventariController {
   deleteInventari(@Param('id') id: string) {
     return this.inventariService.deleteInventari(parseInt(id));
   }
+
+  @Get(':id/issues/count')
+  async getIssueCount(@Param('id') id: number): Promise<number> {
+    return this.inventariService.countIssuesByInventari(id);
+  }
+
+  @Get(':id/issues/user-stats')
+  async getuserStats(@Param('id') id: number): Promise<any> {
+    return this.inventariService.userStatsByInventari(id);
+  }
+  @Get('issues/all')
+  async getAllDevicesWithIssues(): Promise<any> {
+    return this.inventariService.getAllDevicesWithIssues();
+  }
 }
