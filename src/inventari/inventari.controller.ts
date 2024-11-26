@@ -58,11 +58,8 @@ export class InventariController {
   async getuserStats(@Param('id') id: number): Promise<any> {
     return this.inventariService.userStatsByInventari(id);
   }
-
-  @Get('test')
-async test(): Promise<string> {
-  return 'Test OK';
-}
-
-
+  @Get('issues/all')
+  async getAllDevicesWithIssues(): Promise<any> {
+    return this.inventariService.getAllDevicesWithIssues();
+  }
 }
