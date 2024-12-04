@@ -9,16 +9,16 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3000);
   const config = new DocumentBuilder()
     .setTitle('Gestió de fitxers')
-    .setDescription('API per carregar, descarregar i eliminar fitxers amb GridFS')
+    .setDescription(
+      'API per carregar, descarregar i eliminar fitxers amb GridFS',
+    )
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
+  const port = process.env.PORT || 3000;
   await app.listen(3000);
-
 }
 bootstrap();
