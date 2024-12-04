@@ -1,6 +1,5 @@
 # Nodejs
 package-lock.json
-package.json
 
 # compiled output
 /dist
@@ -45,9 +44,6 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
-
-# Exclude `env` file specifically
-env
 
 # temp directory
 .temp

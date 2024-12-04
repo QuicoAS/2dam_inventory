@@ -49,6 +49,10 @@ export class InventariController {
   deleteInventari(@Param('id') id: string) {
     return this.inventariService.deleteInventari(parseInt(id));
   }
+  @Post('pdf')
+  generate_qr(@Body() inventory_items: number[], @Res() res: any) {
+    const inventoryIdItems = inventory_items;
+    return this.inventariService.generate_qr(inventoryIdItems, res);
 
   @Get(':id/issues/count')
   async getIssueCount(@Param('id') id: number): Promise<number> {

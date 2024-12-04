@@ -14,7 +14,6 @@ export class InventariService {
     private readonly labelsService: LabelsService,
     @InjectRepository(Inventari)
     private readonly inventariRepository: Repository<Inventari>,
-    @InjectRepository(Issue) private issueRepository: Repository<Issue>,
   ) {}
 
   async getInventari(id?: number, xml?: string): Promise<any> {
