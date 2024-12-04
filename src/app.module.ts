@@ -27,10 +27,19 @@ import { MailModule } from './mail/mail.module';
 import { LabelsModule } from './utils/labels.module';
 import { UploadModule } from './upload/upload.module';
 import { UploadEntity } from './upload/upload.entity';
+import { FilesModule } from './files/files.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     ClassroomModule,
     InventariTypeModule,
     IssuesModule,
@@ -70,6 +79,7 @@ import { UploadEntity } from './upload/upload.entity';
       inject: [ConfigService],
     }),
     LabelsModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [AuthorizationMiddleware, AuthService],

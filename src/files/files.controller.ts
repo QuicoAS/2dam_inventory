@@ -1,58 +1,105 @@
 import {
-  Controller,
   Post,
-  UploadedFile,
-  UseInterceptors,
   Get,
   Param,
   Res,
-  Delete,
+  Controller,
+  UseInterceptors,
+  UploadedFiles,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
+import { FileResponseVm } from './view-models/file-response-vm.model';
 
-@Controller('files')
+@Controller('/files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(private filesService: FilesService) {}
 
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    if (
-      !file ||
-      !['image/png', 'image/jpeg', 'application/pdf'].includes(file.mimetype)
-    ) {
-      throw new Error('Tipus de fitxer no vàlid.');
+  @Post('')
+  @UseInterceptors(FilesInterceptor('file'))
+  upload(@UploadedFiles() files) {
+    console.log(files);
+    const response = [];
+    files.forEach((file) => {
+      const fileReponse = {
+        originalname: file.originalname,
+        encoding: file.encoding,
+        mimetype: file.mimetype,
+        id: file.id,
+        filename: file.filename,
+        metadata: file.metadata,
+        bucketName: file.bucketName,
+        chunkSize: file.chunkSize,
+        size: file.size,
+        md5: file.md5,
+        uploadDate: file.uploadDate,
+        contentType: file.contentType,
+      };
+      response.push(fileReponse);
+    });
+    return response;
+  }
+
+  @Get('info/:id')
+  async getFileInfo(@Param('id') id: string): Promise<FileResponseVm> {
+    const file = await this.filesService.findInfo(id);
+    const filestream = await this.filesService.readStream(id);
+    if (!filestream) {
+      throw new HttpException(
+        'An error occurred while retrieving file info',
+        HttpStatus.EXPECTATION_FAILED,
+      );
     }
-
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('El fitxer supera la mida màxima de 5MB.');
-    }
-
-    const result = await this.filesService.uploadFile(
-      file.buffer,
-      file.originalname,
-      file.mimetype,
-    );
-    return result;
+    return {
+      message: 'File has been detected',
+      file: file,
+    };
   }
 
   @Get(':id')
-  async getFile(@Param('id') id: string, @Res() res: any) {
-    try {
-      return this.filesService.getFile(id, res);
-    } catch (err) {
-      res.status(500).send({ message: 'No s’ha pogut obtenir el fitxer.' });
+  async getFile(@Param('id') id: string, @Res() res) {
+    const file = await this.filesService.findInfo(id);
+    const filestream = await this.filesService.readStream(id);
+    if (!filestream) {
+      throw new HttpException(
+        'An error occurred while retrieving file',
+        HttpStatus.EXPECTATION_FAILED,
+      );
     }
+    res.header('Content-Type', file.contentType);
+    return filestream.pipe(res);
   }
 
-  @Delete(':id')
-  async deleteFile(@Param('id') id: string, @Res() res: any) {
-    try {
-      const result = await this.filesService.deleteFile(id);
-      res.status(200).send({ success: result });
-    } catch (err) {
-      res.status(500).send({ message: 'No s’ha pogut eliminar el fitxer.' });
+  @Get('download/:id')
+  async downloadFile(@Param('id') id: string, @Res() res) {
+    const file = await this.filesService.findInfo(id);
+    const filestream = await this.filesService.readStream(id);
+    if (!filestream) {
+      throw new HttpException(
+        'An error occurred while retrieving file',
+        HttpStatus.EXPECTATION_FAILED,
+      );
     }
+    res.header('Content-Type', file.contentType);
+    res.header('Content-Disposition', 'attachment; filename=' + file.filename);
+    return filestream.pipe(res);
+  }
+
+  @Get('delete/:id')
+  async deleteFile(@Param('id') id: string): Promise<FileResponseVm> {
+    const file = await this.filesService.findInfo(id);
+    const filestream = await this.filesService.deleteFile(id);
+    if (!filestream) {
+      throw new HttpException(
+        'An error occurred during file deletion',
+        HttpStatus.EXPECTATION_FAILED,
+      );
+    }
+    return {
+      message: 'File has been deleted',
+      file: file,
+    };
   }
 }

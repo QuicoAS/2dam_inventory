@@ -50,11 +50,8 @@ export class InventariController {
     return this.inventariService.deleteInventari(parseInt(id));
   }
   @Post('pdf')
-  generate_qr(
-    @Body() inventory_items: { inventory_items: number[] },
-    @Res() res: any,
-  ) {
-    const inventoryIdItems = inventory_items.inventory_items;
+  generate_qr(@Body() inventory_items: number[], @Res() res: any) {
+    const inventoryIdItems = inventory_items;
     return this.inventariService.generate_qr(inventoryIdItems, res);
   }
 
