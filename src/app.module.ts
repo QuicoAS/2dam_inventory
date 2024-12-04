@@ -23,9 +23,10 @@ import { Status } from './status/status.entity';
 import { AuthorizationMiddleware } from './authorization.middleware';
 import StatusModule from './status/status.module';
 import { AuthService } from './Autentication/auth.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { FilesModule } from './files/files.module';
-
+import { MailModule } from './mail/mail.module';
+import { LabelsModule } from './utils/labels.module';
+import { UploadModule } from './upload/upload.module';
+import { UploadEntity } from './upload/upload.entity';
 
 @Module({
   imports: [
@@ -38,8 +39,12 @@ import { FilesModule } from './files/files.module';
     InventariModule,
     UtilsModule,
     IssuesConversationModule,
-    FilesModule,
-    MongooseModule.forRoot('mongodb://localhost:27017'),
+    MailModule,
+    LabelsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    UploadModule,
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -58,11 +63,13 @@ import { FilesModule } from './files/files.module';
           User,
           Inventari,
           Status,
+          UploadEntity,
         ],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
+    LabelsModule,
   ],
   controllers: [],
   providers: [AuthorizationMiddleware, AuthService],

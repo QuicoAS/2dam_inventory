@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { IssueConversationService } from './issues_conversation.service';
-import { IssueConversationEntity } from './issues_conversation.entity';
-import { UtilsService } from '../utils/utils.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { UtilsService } from '../utils/utils.service';
+import { IssueConversationEntity } from './issues_conversation.entity';
+import { IssueConversationService } from './issues_conversation.service';
 
 const conversationArray = [
   {
@@ -54,12 +54,17 @@ describe('IssueConversationService', () => {
   let conversationService: IssueConversationService;
   const MockConversationRepository = {
     find: jest.fn(() => conversationArray),
-    findOneBy: jest.fn(() => oneConversation),
+    findOneBy: jest.fn((conditions) => {
+      if (conditions.id_conversation === updateConversation.id_conversation) {
+        return updateConversation;
+      }
+      return oneConversation;
+    }),
     create: jest.fn(() => oneConversation),
     findOne: jest.fn(() => oneConversation),
     delete: jest.fn(() => deleteConversation),
-    save: jest.fn(() => updateConversation),
-    merge: jest.fn(() => updateConversation),
+    save: jest.fn((conversation) => conversation),
+    merge: jest.fn((existing, updates) => ({ existing, updates })),
   };
 
   beforeEach(async () => {
@@ -82,6 +87,7 @@ describe('IssueConversationService', () => {
   it('should be defined', () => {
     expect(conversationService).toBeDefined();
   });
+
   describe('createIssueConversation', () => {
     it('should create a new conversation', async () => {
       const mockConversation = {
@@ -99,7 +105,7 @@ describe('IssueConversationService', () => {
   });
 
   describe('getIssueConversation', () => {
-    it('should return an array of cinversation when xml is not provided', async () => {
+    it('should return an array of conversations when xml is not provided', async () => {
       const result = await conversationService.getIssueConversation(1, 'false');
       expect(typeof result).toBe('object');
     });

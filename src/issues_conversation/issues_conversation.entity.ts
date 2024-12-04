@@ -4,9 +4,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Issue } from '../issues/issues.entity';
 import { User } from '../users/users.entity';
+import { UploadEntity } from '../upload/upload.entity';
 
 @Entity('issue_conversation')
 export class IssueConversationEntity {
@@ -26,4 +28,9 @@ export class IssueConversationEntity {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
+
+  @OneToMany(() => UploadEntity, (upload) => upload.issueConversation, {
+    onDelete: 'CASCADE',
+  })
+  upload: UploadEntity[];
 }

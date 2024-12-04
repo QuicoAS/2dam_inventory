@@ -14,6 +14,9 @@ import { UserSeeder } from './db/seeding/seeds/users.seeder';
 import { Inventary_typeSeeder } from './db/seeding/seeds/inventari_type.seeds';
 import { ClassroomSeeder } from './db/seeding/seeds/classroomSeed';
 import { config } from 'dotenv';
+import { StatusSeeder } from './db/seeding/seeds/statusSeed';
+import { UploadSeeder } from './db/seeding/seeds/uploadSeed';
+import { UploadEntity } from './upload/upload.entity';
 config();
 
 const options: DataSourceOptions & SeederOptions = {
@@ -29,16 +32,19 @@ const options: DataSourceOptions & SeederOptions = {
     Issue,
     IssueConversationEntity,
     User,
-    Inventari,
     Status,
     Classroom,
+    Inventari,
+    UploadEntity,
   ],
   seeds: [
     Inventary_typeSeeder,
     UserSeeder,
     ClassroomSeeder,
-    IssueSeeder,
+    StatusSeeder,
     InventariSeeder,
+    IssueSeeder,
+    UploadSeeder,
   ],
 };
 
