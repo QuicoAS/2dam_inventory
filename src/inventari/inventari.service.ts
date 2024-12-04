@@ -102,4 +102,51 @@ export class InventariService {
     }
     return { message: 'Inventario eliminado' };
   }
+
+  async generate_qr(inventoryIdItems: number[], res: any) {
+    const qr = require('qr-image');
+    const fs = require('fs');
+    const path = require('path');
+    const qr_folder = path.join(__dirname, '../../public/qr/');
+    if (!fs.existsSync(qr_folder)) {
+      fs.mkdirSync(qr_folder);
+    }
+
+    res.send('QR code generated');
+  }
+
+  async countIssuesByInventari(id: number): Promise<number> {
+    const inventari = await this.inventariRepository.findOneBy({
+      id_inventory: id,
+    });
+    if (!inventari) {
+      throw new HttpException('Inventario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    return await this.issueRepository.count({
+      where: { fk_inventari: { id_inventory: id } },
+    });
+  }
+  async userStatsByInventari(id: number): Promise<any> {
+    const inventari = await this.inventariRepository.findOneBy({
+      id_inventory: id,
+    });
+    if (!inventari) {
+      throw new HttpException('Inventario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    const query = this.issueRepository
+      .createQueryBuilder('issue')
+      .select('fk_user')
+      .addSelect('COUNT(*)', 'count')
+      .where('fk_inventari = :id', { id })
+      .groupBy('fk_user');
+    return await query.getRawMany();
+  }
+  async getAllDevicesWithIssues(): Promise<any> {
+    return await this.issueRepository
+      .createQueryBuilder('issue')
+      .select('fk_inventari')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('fk_inventari')
+      .getRawMany();
+  }
 }

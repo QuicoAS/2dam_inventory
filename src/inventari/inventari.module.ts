@@ -8,8 +8,7 @@ import { LabelsModule } from 'src/utils/labels.module';
 import { Issue } from '../issues/issues.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Inventari]), UtilsModule, LabelsModule],
-  imports: [TypeOrmModule.forFeature([Inventari, Issue]), UtilsModule],
+  imports: [TypeOrmModule.forFeature([Inventari, Issue]), UtilsModule, LabelsModule],
   exports: [TypeOrmModule],
   controllers: [InventariController],
   providers: [InventariService],
