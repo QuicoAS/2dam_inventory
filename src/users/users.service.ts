@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UtilsService } from '../utils/utils.service';
-import { User } from './users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { Repository } from 'typeorm';
+import { UtilsService } from '../utils/utils.service';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { User } from './users.entity';
 @Injectable()
 export class UsersService {
   constructor(
@@ -29,6 +29,63 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(await usuario.password, 10);
     usuario.password = passwordHash;
     return this.usersRepository.save(usuario);
+  }
+
+  async getStatisticsUser(id_user: number): Promise<any> {
+    const user = await this.usersRepository.findOneBy({ id_user });
+    if (user != null) {
+      const statistics = await this.usersRepository
+        .createQueryBuilder('user')
+        .select('COUNT(issue.id_issue)', 'totalIssues')
+        .addSelect(
+          "COUNT(CASE WHEN status.description = 'Creada' THEN 1 END)",
+          'numIssuesCreadas',
+        )
+        .addSelect(
+          "COUNT(CASE WHEN status.description = 'En revisión' THEN 1 END)",
+          'numIssuesRevision',
+        )
+        .addSelect(
+          "COUNT(CASE WHEN status.description = 'Rechazada' THEN 1 END)",
+          'numIssuesRechazadas',
+        )
+        .addSelect(
+          "COUNT(CASE WHEN status.description = 'Completada' THEN 1 END)",
+          'numIssuesCompl',
+        )
+        .addSelect(
+          "SEC_TO_TIME(AVG(CASE WHEN status.description = 'Completada' THEN TIMESTAMPDIFF(SECOND, issue.created_at, issue.last_updated) END))",
+          'difHorasCompletarIssues',
+        )
+        .innerJoin('issue', 'issue', 'user.id_user = issue.id_user')
+        .innerJoin('status', 'status', 'status.id_status = issue.id_status')
+        .where('user.id_user = :id', { id: id_user })
+        .getRawOne();
+      const statisticsAbiertas = await this.usersRepository
+        .createQueryBuilder('user')
+        .select('issue.id_issue', 'idIssuesAbierta')
+        .innerJoin('issue', 'issue', 'user.id_user = issue.id_user')
+        .innerJoin('status', 'status', 'status.id_status = issue.id_status')
+        .where(
+          "user.id_user = :id AND (status.description = 'Creada' OR status.description = 'En revisión')",
+          { id: id_user },
+        )
+        .getRawMany();
+      const result = {
+        totalIssues: parseInt(statistics.totalIssues),
+        numIssuesCreadas: parseInt(statistics.numIssuesCreadas),
+        numIssuesRevision: parseInt(statistics.numIssuesRevision),
+        numIssuesRechazadas: parseInt(statistics.numIssuesRechazadas),
+        numIssuesCompl: parseInt(statistics.numIssuesCompl),
+        idIssuesAbiertas: statisticsAbiertas.map(
+          (issue) => issue.idIssuesAbierta,
+        ),
+        difHorasCompletarIssues: statistics.difHorasCompletarIssues,
+      };
+      return result;
+    } else {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
   }
 
   async getUser(id_user: number, xml?: string): Promise<User | string | null> {
@@ -68,5 +125,72 @@ export class UsersService {
       return user;
     }
     return null;
+  }
+  async getStaticTechnician(id_user: string): Promise<User | string | null> {
+    const userId = parseInt(id_user.toString(), 10);
+    if (isNaN(userId)) {
+      throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
+    }
+
+    const technician = await this.usersRepository.findOne({
+      where: { id_user: userId, role: 2 },
+    });
+
+    if (!technician) {
+      throw new HttpException(
+        'El usuario no es un técnico',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    try {
+      const stats = await this.usersRepository
+        .createQueryBuilder('user')
+        .innerJoin('issue', 'issue', 'user.id_user = issue.id_tecnic')
+        .where('user.id_user = :userId', { userId })
+        .andWhere('user.role = :role', { role: 2 })
+        .select('user.id_user AS id_user')
+        .addSelect('user.name AS name')
+        .addSelect('user.surname AS surname')
+        .addSelect('COUNT(issue.id_issue) AS total_issues')
+        .addSelect('SUM(issue.id_status = 4) AS Completadas')
+        .addSelect('SUM(issue.id_status = 3) AS Canceladas')
+        .addSelect('SUM(issue.id_status = 2) AS Abiertas')
+        .addSelect('SUM(issue.id_status = 1) AS Creaddas')
+        .addSelect(
+          `
+          SEC_TO_TIME(
+              IFNULL(
+                  AVG(
+                      IF(issue.id_status = 4, TIMESTAMPDIFF(SECOND, issue.created_at, issue.last_updated), NULL)
+                  ),
+                  0
+              )
+          ) AS Media_tiempo_resolucion
+        `,
+        )
+        .groupBy('user.id_user')
+        .getRawOne();
+
+      if (!stats) {
+        throw new HttpException(
+          'No se encontraron estadísticas para este técnico',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return stats;
+    } catch (err) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: err.message || 'Error interno en el servidor',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: err,
+        },
+      );
+    }
   }
 }

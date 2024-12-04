@@ -15,9 +15,9 @@ export default [
     description: 'Tablet',
   },
   {
-    description: 'Proyector',
+    description: 'Periférico',
   },
   {
-    description: 'Periférico',
+    description: 'Proyector',
   },
 ];

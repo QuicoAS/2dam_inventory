@@ -21,5 +21,16 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    // note you must disable the base rule
+    // as it can report incorrect errors
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error", // or "error"
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ]
   },
 };

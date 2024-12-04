@@ -23,9 +23,23 @@ import { Status } from './status/status.entity';
 import { AuthorizationMiddleware } from './authorization.middleware';
 import StatusModule from './status/status.module';
 import { AuthService } from './Autentication/auth.service';
+import { MailModule } from './mail/mail.module';
+import { LabelsModule } from './utils/labels.module';
+import { UploadModule } from './upload/upload.module';
+import { UploadEntity } from './upload/upload.entity';
+import { FilesModule } from './files/files.module';
+import { MongooseModule } from '@nestjs/mongoose';
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URI'),
+      }),
+      inject: [ConfigService],
+    }),
     ClassroomModule,
     InventariTypeModule,
     IssuesModule,
@@ -34,6 +48,12 @@ import { AuthService } from './Autentication/auth.service';
     InventariModule,
     UtilsModule,
     IssuesConversationModule,
+    MailModule,
+    LabelsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    UploadModule,
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -52,11 +72,14 @@ import { AuthService } from './Autentication/auth.service';
           User,
           Inventari,
           Status,
+          UploadEntity,
         ],
         synchronize: true,
       }),
       inject: [ConfigService],
     }),
+    LabelsModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [AuthorizationMiddleware, AuthService],

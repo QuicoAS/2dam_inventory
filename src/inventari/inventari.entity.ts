@@ -33,6 +33,9 @@ export class Inventari {
   @Column()
   status: string;
 
+  @Column()
+  text_etiqueta: string;
+
   @ManyToOne(
     () => Inventari_type,
     (inventariType) => inventariType.fk_inventari,

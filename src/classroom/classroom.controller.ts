@@ -65,4 +65,9 @@ export class ClassroomController {
   deleteClassroom(@Param('id') id: string) {
     return this.classroomService.deleteClassroom(parseInt(id));
   }
+
+  @Get('/:id/devices')
+  async obtenerDispositivosPorClase(@Param('id') id: number) {
+    return await this.classroomService.obtenerDispositivosPorClase(id);
+  }
 }

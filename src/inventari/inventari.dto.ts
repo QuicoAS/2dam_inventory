@@ -18,6 +18,7 @@ export class CreateInventariDto {
 
   @IsString()
   status: string;
+
   @IsInt()
   @IsNotEmpty()
   id_type: number;

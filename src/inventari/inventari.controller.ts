@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import { InventariService } from './inventari.service';
 import { CreateInventariDto } from './inventari.dto';

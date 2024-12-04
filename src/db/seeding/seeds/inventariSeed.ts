@@ -35,6 +35,13 @@ export class InventariSeeder implements Seeder {
           status: item.status,
           fk_inventary_type: inventariType,
           fk_classroom: classroom,
+          text_etiqueta:
+            inventariType.description +
+            ' ' +
+            item.model +
+            '(' +
+            item.brand +
+            ')',
         };
       }),
     );

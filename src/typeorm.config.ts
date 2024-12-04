@@ -8,6 +8,7 @@ import { Issue } from './issues/issues.entity';
 import { IssueConversationEntity } from './issues_conversation/issues_conversation.entity';
 import { Status } from './status/status.entity';
 import * as dotenv from 'dotenv';
+import { UploadEntity } from './upload/upload.entity';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ const config = {
     Issue,
     IssueConversationEntity,
     Status,
+    UploadEntity,
   ],
   migrations: ['./src/migrations/*.ts'],
   synchronize: false,

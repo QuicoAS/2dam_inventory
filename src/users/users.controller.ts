@@ -10,14 +10,16 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { AuthService } from 'src/Autentication/auth.service';
+import { MailService } from 'src/mail/mail.service';
+import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { UsersService } from './users.service';
 @Controller('Users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
+    private readonly mailService: MailService,
   ) {}
 
   @Get()
@@ -37,6 +39,16 @@ export class UsersController {
       );
     }
   }
+
+  @Get('statistics/:id')
+  getStatisticsUser(@Param('id') id: string) {
+    const userId = parseInt(id);
+    if (isNaN(userId)) {
+      throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
+    }
+    return this.usersService.getStatisticsUser(userId);
+  }
+
   @Get(':id')
   getUser(@Param('id') id: string, @Query('xml') xml?: string) {
     const userId = parseInt(id);
@@ -92,6 +104,12 @@ export class UsersController {
     }
 
     const token = await this.authService.generateToken(user.id_user);
+
     return { token };
+  }
+  @Get('technician-stats/:id')
+  async getTechnicianStats(@Param('id') id: string) {
+    const stat = await this.usersService.getStaticTechnician(id);
+    return stat;
   }
 }

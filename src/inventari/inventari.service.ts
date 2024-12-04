@@ -5,11 +5,13 @@ import { Inventari } from './inventari.entity';
 import { UtilsService } from '../utils/utils.service';
 import { CreateInventariDto, UpdateInventariDto } from './inventari.dto';
 import { Issue } from '../issues/issues.entity';
+import { LabelsService } from 'src/utils/labels.service';
 
 @Injectable()
 export class InventariService {
   constructor(
     private readonly utilsService: UtilsService,
+    private readonly labelsService: LabelsService,
     @InjectRepository(Inventari)
     private readonly inventariRepository: Repository<Inventari>,
     @InjectRepository(Issue) private issueRepository: Repository<Issue>,
@@ -54,25 +56,43 @@ export class InventariService {
       fk_inventary_type: { id_type: createInventariDto.id_type },
       fk_classroom: { id_classroom: createInventariDto.id_classroom },
     });
+    const text_etiqueta =
+      newInventari.fk_inventary_type.description +
+      ' ' +
+      newInventari.model +
+      '(' +
+      newInventari.brand +
+      ')';
+
+    newInventari.text_etiqueta = text_etiqueta;
     await this.inventariRepository.save(newInventari);
     return { message: 'Inventario creado' };
   }
 
-  async updateInventari(id: number, inventari: UpdateInventariDto) {
+  async updateInventari(id: number, inventariDto: UpdateInventariDto) {
     const updatedData = {
-      ...inventari,
-      fk_inventary_type: { id_type: inventari.id_type },
-      fk_classroom: { id_classroom: inventari.id_classroom },
+      ...inventariDto,
+      fk_inventary_type: { id_type: inventariDto.id_type },
+      fk_classroom: { id_classroom: inventariDto.id_classroom },
     };
 
-    await this.inventariRepository.update(id, updatedData);
-    const updatedInventari = await this.inventariRepository.findOneBy({
+    const inventari = await this.inventariRepository.findOneBy({
       id_inventory: id,
     });
-    if (!updatedInventari) {
+    const text_etiqueta =
+      inventari.fk_inventary_type.description +
+      ' ' +
+      inventari.model +
+      '(' +
+      inventari.brand +
+      ')';
+
+    inventari.text_etiqueta = text_etiqueta;
+    if (!inventari) {
       throw new HttpException('Inventario no encontrado', HttpStatus.NOT_FOUND);
     }
-    return updatedInventari;
+    this.inventariRepository.merge(inventari, updatedData);
+    return this.inventariRepository.save(inventari);
   }
 
   async deleteInventari(id: number): Promise<{ message: string }> {
@@ -135,5 +155,24 @@ export class InventariService {
     }));
 
     return result;
+  }
+
+  async generate_qr(inventoryIdItems: any, res: any) {
+    try {
+      const inventoryItems = await this.inventariRepository.find({
+        relations: ['fk_inventary_type', 'fk_issue', 'fk_classroom'],
+        where: inventoryIdItems,
+      });
+
+      const filterInventoryItems = inventoryItems.filter((item) =>
+        inventoryIdItems.includes(item.id_inventory),
+      );
+      this.labelsService.generateLabels(filterInventoryItems, res);
+    } catch (error) {
+      throw new HttpException(
+        'Inventario no encontrado' + error,
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }
