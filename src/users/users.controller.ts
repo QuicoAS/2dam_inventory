@@ -14,7 +14,16 @@ import { AuthService } from 'src/Autentication/auth.service';
 import { MailService } from 'src/mail/mail.service';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { UsersService } from './users.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
+
 @Controller('Users')
+@ApiTags('Users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -23,6 +32,7 @@ export class UsersController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Obtindre tots els usuaris' })
   getAllUser(@Query('xml') xml?: string) {
     try {
       return this.usersService.getAllUser(xml);
@@ -50,6 +60,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', description: "ID de l'usuari", type: 'integer' })
   getUser(@Param('id') id: string, @Query('xml') xml?: string) {
     const userId = parseInt(id);
     if (isNaN(userId)) {
@@ -59,6 +70,7 @@ export class UsersController {
   }
 
   @Post()
+  @ApiBody({ description: 'Dades per crear un usuari', type: CreateUserDto })
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
@@ -76,6 +88,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiResponse({ status: 200, description: 'Usuari eliminat correctament' })
   deleteUser(@Param('id') id: string) {
     const userId = parseInt(id);
     if (isNaN(userId)) {
@@ -83,6 +96,7 @@ export class UsersController {
     }
     return this.usersService.deleteUser(userId);
   }
+
   @Post('login')
   async login(
     @Body('email') email: string,
@@ -107,6 +121,7 @@ export class UsersController {
 
     return { token };
   }
+
   @Get('technician-stats/:id')
   async getTechnicianStats(@Param('id') id: string) {
     const stat = await this.usersService.getStaticTechnician(id);

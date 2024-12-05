@@ -11,12 +11,27 @@ import {
 } from '@nestjs/common';
 import { InventariTypeService } from './inventari_type.service';
 import { Response } from 'express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 
 @Controller('inventari_type')
+@ApiTags('inventari_type')
 export class InventariTypeController {
   constructor(private readonly inventariTypeService: InventariTypeService) {}
 
   @Get()
+  @ApiOperation({ summary: "Llista tots els tipus d'inventari." })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    description: 'Format de la resposta, "xml" per retornar XML.',
+  })
   async getAllInventariType(
     @Query('format') format?: string,
     @Res() res?: Response,
@@ -32,6 +47,11 @@ export class InventariTypeController {
   }
 
   @Get(':id')
+  @ApiParam({
+    name: 'id',
+    description: "ID del tipus d'inventari.",
+    type: 'integer',
+  })
   async getInventariType(
     @Param('id') id: string,
     @Query('format') format?: string,
@@ -51,6 +71,14 @@ export class InventariTypeController {
   }
 
   @Post()
+  @ApiBody({
+    description: "Dades per crear un nou tipus d'inventari.",
+    type: Object,
+  })
+  @ApiResponse({
+    status: 201,
+    description: "Tipus d'inventari creat correctament.",
+  })
   createInventariType(@Body() inventari_type) {
     return this.inventariTypeService.createInventariType(inventari_type);
   }
@@ -64,6 +92,7 @@ export class InventariTypeController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: "Elimina un tipus d'inventari." })
   deleteInventariType(@Param('id') id: string) {
     return this.inventariTypeService.deleteInventariType(parseInt(id));
   }

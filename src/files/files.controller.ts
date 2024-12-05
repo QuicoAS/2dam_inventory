@@ -12,13 +12,23 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { FileResponseVm } from './view-models/file-response-vm.model';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 
 @Controller('/files')
+@ApiTags('files')
 export class FilesController {
   constructor(private filesService: FilesService) {}
 
   @Post('')
   @UseInterceptors(FilesInterceptor('file'))
+  @ApiOperation({ summary: 'Carrega un fitxer al servidor.' })
+  @ApiBody({ description: 'Fitxers carregats', type: 'string', isArray: true })
   upload(@UploadedFiles() files) {
     console.log(files);
     const response = [];
@@ -43,6 +53,8 @@ export class FilesController {
   }
 
   @Get('info/:id')
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Informació del fitxer retornada.' })
   async getFileInfo(@Param('id') id: string): Promise<FileResponseVm> {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.readStream(id);
@@ -88,6 +100,12 @@ export class FilesController {
   }
 
   @Get('delete/:id')
+  @ApiOperation({ summary: 'Elimina un fitxer pel seu ID.' })
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({
+    status: 200,
+    description: 'Fitxer eliminat correctament.',
+  })
   async deleteFile(@Param('id') id: string): Promise<FileResponseVm> {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.deleteFile(id);

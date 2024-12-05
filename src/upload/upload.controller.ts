@@ -14,8 +14,16 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../multer.config';
 import { UploadService } from './upload.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 
 @Controller('upload')
+@ApiTags('upload')
 export class UploadController {
   private uploadService: UploadService;
   constructor(uploadService: UploadService) {
@@ -24,6 +32,11 @@ export class UploadController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file', multerConfig))
+  @ApiOperation({ summary: 'Carrega un fitxer al servidor.' })
+  @ApiBody({
+    description: 'Fitxer a carregar i informació associada.',
+    type: 'multipart/form-data',
+  })
   async uploadFile(
     @UploadedFile() file,
     @Body('issueConversation') issueConversationId: number,
@@ -44,11 +57,16 @@ export class UploadController {
   }
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'Llista de fitxers retornada correctament.',
+  })
   getAlluploads() {
     return this.uploadService.getAlluploads();
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', description: 'ID del fitxer.', type: 'integer' })
   getUpload(@Param('id') id: string) {
     return this.uploadService.getUpload(parseInt(id));
   }
@@ -69,6 +87,7 @@ export class UploadController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Elimina un fitxer pel seu ID.' })
   deleteInventari(@Param('id') id: string) {
     return this.uploadService.deleteUpload(parseInt(id));
   }
