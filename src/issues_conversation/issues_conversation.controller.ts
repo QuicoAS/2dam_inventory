@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 
 @Controller('issue_conversation')
-@ApiTags('issue_conversation')
+@ApiTags('issues')
 export class IssueConversationController {
   constructor(
     private readonly issueConversationService: IssueConversationService,

@@ -1,6 +1,6 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { Connection, Mongoose } from 'mongoose';
 import { MongoGridFS } from 'mongo-gridfs';
 import { GridFSBucketReadStream } from 'mongodb';
 import { FileInfoVm } from './view-models/file-info-vm.model';
@@ -10,7 +10,7 @@ export class FilesService {
   private fileModel: MongoGridFS;
 
   constructor(@InjectConnection() private readonly connection: Connection) {
-    this.fileModel = new MongoGridFS(this.connection.db, 'fs');
+    this.fileModel = new MongoGridFS(this.connection.db as any, 'fs');
   }
 
   async readStream(id: string): Promise<GridFSBucketReadStream> {

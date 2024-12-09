@@ -15,30 +15,18 @@ async function bootstrap() {
       "Documentació de l'API per a gestionar inventari i reparacions en un institut.",
     )
     .setVersion('1.0')
-    .addTag('classroom', 'endpoint per a gestionar les aules')
+    .addTag('classrooms', 'Endpoints per a gestionar les aules')
+    .addTag('files', 'Endpoints per a gestionar arxius')
     .addTag(
-      'inventory_issues',
-      "endpoint per a gestionar les incidències de l'inventari",
+      'inventory',
+      "Endpoints per a gestionar l'inventari i els seus tipus, estats i incidències",
     )
     .addTag(
-      'inventory_status',
-      "endpoint per a gestionar els estats de l'inventari",
+      'issues',
+      'Endpoints per a gestionar les incidències i les seves converses i estats',
     )
-    .addTag('inventory_type', "endpoint per a gestionar els tipus d'inventari")
-    .addTag(
-      'inventory_user',
-      "endpoint per a gestionar els usuaris de l'inventari",
-    )
-    .addTag('inventory', "endpoint per a gestionar l'inventari")
-    .addTag('user', 'endpoint per a gestionar els usuaris')
-    .addTag('upload', 'endpoint per a pujar arxius')
-    .addTag('files', 'endpoint per a gestionar arxius')
-    .addTag('statistics', 'endpoint per a obtenir estadístiques')
-    .addTag(
-      'issues_conversation',
-      'endpoint per a gestionar les converses de les incidències',
-    )
-    .addTag('status', 'endpoint per a gestionar els estats')
+    .addTag('statistics', 'Endpoints per a obtenir estadístiques')
+    .addTag('users', 'Endpoints per a gestionar els usuaris')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

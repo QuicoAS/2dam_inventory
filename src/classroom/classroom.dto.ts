@@ -1,5 +1,5 @@
 import { IsString } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateClassroomDto {
   @IsString()

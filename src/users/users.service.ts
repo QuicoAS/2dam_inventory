@@ -184,7 +184,7 @@ export class UsersService {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: err.message || 'Error interno en el servidor',
+          error: (err as Error).message || 'Error interno en el servidor',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
         {
