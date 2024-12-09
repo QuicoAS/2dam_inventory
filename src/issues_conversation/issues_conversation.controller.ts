@@ -11,14 +11,29 @@ import {
   Query,
 } from '@nestjs/common';
 import { IssueConversationService } from './issues_conversation.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 
 @Controller('issue_conversation')
+@ApiTags('issues')
 export class IssueConversationController {
   constructor(
     private readonly issueConversationService: IssueConversationService,
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Llista totes les converses de les incidències.' })
+  @ApiQuery({
+    name: 'xml',
+    required: false,
+    description: 'Si és "true", retorna el resultat en format XML.',
+  })
   async getAllIssueConversation(@Query('xml') xml: string) {
     const conversations =
       await this.issueConversationService.getAllIssueConversation(xml);
@@ -26,6 +41,7 @@ export class IssueConversationController {
   }
 
   @Get(':id')
+  @ApiParam({ name: 'id', description: 'ID de la conversa.', type: 'integer' })
   async getIssueConversation(
     @Param('id') id: string,
     @Query('xml') xml: string,
@@ -45,11 +61,25 @@ export class IssueConversationController {
   }
 
   @Post()
+  @ApiBody({
+    description: "Dades per crear una nova conversa d'incidència.",
+    type: Object,
+  })
+  @ApiResponse({
+    status: 201,
+    description: "Conversa d'incidència creada correctament.",
+  })
   createIssueConversation(@Body() body: any) {
     return this.issueConversationService.createIssueConversation(body);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: "Elimina una conversa d'incidència." })
+  @ApiParam({
+    name: 'id_conversation',
+    description: 'ID de la conversa a eliminar.',
+    type: 'integer',
+  })
   deleteIssueConversation(@Param('id') id_conversation: string) {
     const conversationId = parseInt(id_conversation);
     if (isNaN(conversationId)) {
@@ -64,6 +94,11 @@ export class IssueConversationController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: "Actualitza una conversa d'incidència." })
+  @ApiBody({
+    description: 'Notes a actualitzar a la conversa.',
+    type: String,
+  })
   updateIssueConversation(
     @Param('id') id_conversation: string,
     @Body('notes') notes: string,

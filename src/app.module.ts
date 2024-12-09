@@ -32,7 +32,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -50,9 +52,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     IssuesConversationModule,
     MailModule,
     LabelsModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     UploadModule,
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forRootAsync({

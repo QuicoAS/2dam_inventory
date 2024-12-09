@@ -14,8 +14,17 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../multer.config';
 import { UploadService } from './upload.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
 
 @Controller('upload')
+@ApiTags('inventory')
 export class UploadController {
   private uploadService: UploadService;
   constructor(uploadService: UploadService) {
@@ -24,6 +33,13 @@ export class UploadController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file', multerConfig))
+  @ApiOperation({ summary: 'Carrega un fitxer al servidor.' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Fitxer a carregar i informació associada.',
+    type: 'multipart/form-data',
+  })
+  @ApiResponse({ status: 201, description: 'Fitxer carregat correctament.' })
   async uploadFile(
     @UploadedFile() file,
     @Body('issueConversation') issueConversationId: number,
@@ -44,17 +60,37 @@ export class UploadController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Obté tots els fitxers carregats.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Llista de fitxers retornada correctament.',
+  })
   getAlluploads() {
     return this.uploadService.getAlluploads();
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Obté un fitxer per ID.' })
+  @ApiParam({ name: 'id', description: 'ID del fitxer.', type: 'integer' })
+  @ApiResponse({ status: 200, description: 'Fitxer obtingut correctament.' })
   getUpload(@Param('id') id: string) {
     return this.uploadService.getUpload(parseInt(id));
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Actualitza un fitxer.' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del fitxer a actualitzar.',
+    type: 'integer',
+  })
   @UseInterceptors(FileInterceptor('uploadedFile', multerConfig))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Fitxer a actualitzar.',
+    type: 'multipart/form-data',
+  })
+  @ApiResponse({ status: 200, description: 'Fitxer actualitzat correctament.' })
   async updateUpload(
     @Param('id') id: number,
     @UploadedFile() file: Express.Multer.File,
@@ -69,6 +105,13 @@ export class UploadController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Elimina un fitxer pel seu ID.' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del fitxer a eliminar.',
+    type: 'integer',
+  })
+  @ApiResponse({ status: 200, description: 'Fitxer eliminat correctament.' })
   deleteInventari(@Param('id') id: string) {
     return this.uploadService.deleteUpload(parseInt(id));
   }

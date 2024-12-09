@@ -12,13 +12,26 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { FileResponseVm } from './view-models/file-response-vm.model';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+  ApiConsumes,
+} from '@nestjs/swagger';
 
 @Controller('/files')
+@ApiTags('files')
 export class FilesController {
   constructor(private filesService: FilesService) {}
 
   @Post('')
   @UseInterceptors(FilesInterceptor('file'))
+  @ApiOperation({ summary: 'Carrega un fitxer al servidor.' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ description: 'Fitxers carregats', type: 'string', isArray: true })
+  @ApiResponse({ status: 201, description: 'Fitxer carregat correctament.' })
   upload(@UploadedFiles() files) {
     console.log(files);
     const response = [];
@@ -43,6 +56,9 @@ export class FilesController {
   }
 
   @Get('info/:id')
+  @ApiOperation({ summary: "Obté la informació d'un fitxer." })
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Informació del fitxer retornada.' })
   async getFileInfo(@Param('id') id: string): Promise<FileResponseVm> {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.readStream(id);
@@ -59,6 +75,9 @@ export class FilesController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Obté un fitxer pel seu ID.' })
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Fitxer retornat correctament.' })
   async getFile(@Param('id') id: string, @Res() res) {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.readStream(id);
@@ -73,6 +92,9 @@ export class FilesController {
   }
 
   @Get('download/:id')
+  @ApiOperation({ summary: 'Descarrega un fitxer pel seu ID.' })
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Fitxer descarregat correctament.' })
   async downloadFile(@Param('id') id: string, @Res() res) {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.readStream(id);
@@ -88,6 +110,12 @@ export class FilesController {
   }
 
   @Get('delete/:id')
+  @ApiOperation({ summary: 'Elimina un fitxer pel seu ID.' })
+  @ApiParam({ name: 'id', description: 'ID del fitxer', type: 'string' })
+  @ApiResponse({
+    status: 200,
+    description: 'Fitxer eliminat correctament.',
+  })
   async deleteFile(@Param('id') id: string): Promise<FileResponseVm> {
     const file = await this.filesService.findInfo(id);
     const filestream = await this.filesService.deleteFile(id);
