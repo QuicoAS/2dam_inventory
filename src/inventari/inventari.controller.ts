@@ -53,18 +53,5 @@ export class InventariController {
   generate_qr(@Body() inventory_items: number[], @Res() res: any) {
     const inventoryIdItems = inventory_items;
     return this.inventariService.generate_qr(inventoryIdItems, res);
-
-  @Get(':id/issues/count')
-  async getIssueCount(@Param('id') id: number): Promise<number> {
-    return this.inventariService.countIssuesByInventari(id);
-  }
-
-  @Get(':id/issues/user-stats')
-  async getuserStats(@Param('id') id: number): Promise<any> {
-    return this.inventariService.userStatsByInventari(id);
-  }
-  @Get('issues/all')
-  async getAllDevicesWithIssues(): Promise<any> {
-    return this.inventariService.getAllDevicesWithIssues();
   }
 }
