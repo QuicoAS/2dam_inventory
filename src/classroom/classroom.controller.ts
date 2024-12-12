@@ -46,16 +46,7 @@ export class ClassroomController {
     try {
       return this.classroomService.getAllClassroom(xml);
     } catch (err) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: err,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        {
-          cause: err,
-        },
-      );
+      throw new HttpException('Error message', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

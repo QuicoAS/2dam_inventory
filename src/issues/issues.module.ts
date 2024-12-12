@@ -4,10 +4,11 @@ import { IssuesService } from './issues.service';
 import { UtilsModule } from '../utils/utils.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Issue } from './issues.entity';
-import { StatisticsModule } from './statistics/statistics.module'; // Importamos el StatisticsModule
+//import { StatisticsModule } from './statistics/statistics.module';
+import { User } from 'src/users/users.entity';
 
 @Module({
-  imports: [UtilsModule, TypeOrmModule.forFeature([Issue]), StatisticsModule],
+  imports: [UtilsModule, TypeOrmModule.forFeature([Issue, User])],
   exports: [TypeOrmModule],
   controllers: [IssuesController],
   providers: [IssuesService],

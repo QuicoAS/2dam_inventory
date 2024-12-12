@@ -3,12 +3,15 @@ import { UtilsService } from '../utils/utils.service';
 import { Issue } from './issues.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from 'src/users/users.entity';
 
 @Injectable()
 export class IssuesService {
   constructor(
     private readonly UtilsService: UtilsService,
     @InjectRepository(Issue) private issueRepository: Repository<Issue>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   async getAllIssues(xml?: string): Promise<Issue[] | string> {
@@ -26,9 +29,28 @@ export class IssuesService {
     }
   }
 
-  async createIssue(Issue: any): Promise<Issue[]> {
-    const newIssue = this.issueRepository.create(Issue);
-    return this.issueRepository.save(newIssue);
+  async createIssue(issueData: any): Promise<Issue> {
+    const technicianWithLeastIssues: User | null = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.assignedIssues', 'issue')
+      .where('user.role = :role', { role: 2 })
+      .groupBy('user.id_user')
+      .orderBy('COUNT(issue.id_issue)', 'ASC')
+      .getOne();
+
+    if (!technicianWithLeastIssues) {
+      throw new Error('No se encontró un técnico disponible');
+    }
+
+    const newIssue = this.issueRepository.create({
+      ...issueData,
+      technician: technicianWithLeastIssues,
+    });
+    const savedIssue = await this.issueRepository.save(newIssue);
+    if (Array.isArray(savedIssue)) {
+      throw new Error('save() returned an array, expected an object.');
+    }
+    return savedIssue;
   }
 
   async getIssue(id: number, xml?: string): Promise<Issue | string | null> {

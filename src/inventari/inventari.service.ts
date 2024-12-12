@@ -119,4 +119,16 @@ export class InventariService {
       );
     }
   }
+
+  async vincularArchivo(serial_number_file: string, id_archivo: string) {
+    const inventari = await this.inventariRepository.findOne({
+      where: { num_serie: serial_number_file },
+    });
+
+    if (!inventari) {
+      throw new HttpException('Inventario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    inventari.id_device_info = id_archivo.toString();
+    return this.inventariRepository.save(inventari);
+  }
 }

@@ -47,16 +47,7 @@ export class UsersController {
     try {
       return this.usersService.getAllUser(xml);
     } catch (err) {
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: err,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        {
-          cause: err,
-        },
-      );
+      throw new HttpException('Missatge d’error', HttpStatus.NOT_FOUND);
     }
   }
 

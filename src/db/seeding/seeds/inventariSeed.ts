@@ -42,6 +42,7 @@ export class InventariSeeder implements Seeder {
             '(' +
             item.brand +
             ')',
+          id_device_info: '0',
         };
       }),
     );
